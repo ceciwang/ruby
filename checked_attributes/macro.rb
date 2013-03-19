@@ -1,5 +1,18 @@
 require 'test/unit'
 
+class Class
+  def attr_checked (attribute, &validate)
+    define_method("#{attribute}=") do |value|
+      raise 'Invalid Attribute' unless validate.call(value)
+      instance_variable_set("@#{attribute}", value)
+    end
+
+    define_method attribute do
+      instance_variable_get "@#{attribute}" 
+    end
+  end
+end
+
 class Person
   attr_checked :age do |v|
     v >= 18
@@ -17,17 +30,10 @@ class PersonTest < Test::Unit::TestCase
   end
 
   def test_raise_invalid_age
-    assert_raise RuntimeError 'Invalid Attribute' do
+    assert_raise RuntimeError, 'Invalid Attribute' do
       @bob.age = 17
     end
   end
 end
 
-class Class
-  def attr_checked (attribute, &validate)
-    define_method("#{attribute}=") do |value|
-      raise 'Invalid Attribute' unless validate.call(value)
-      instance_variable_set("@#{attribute}")
-    end
-  end
-end
+
